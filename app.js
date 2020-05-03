@@ -1,68 +1,88 @@
+function showInformation(id){
+    let details = document.querySelector("#details");
+    details.innerHTML = graphData[id].title+"<br/>"+graphData[id].description;
+}
+function initializeSVG(){
+    window.svg = d3.select('body')
+    .append("svg")
+    //.attr("viewBox", "0 0 " + 1000 + " " + 1000 )
+    //.attr("preserveAspectRatio", "xMinYMin")
+    .attr("width", "960px")
+    .attr("height", "500px");    
+    
+        // define arrow markers for graph links
+    svg.append('svg:defs').append('svg:marker')
+        .attr('id', 'end-arrow')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 3)
+        .attr('markerWidth', 8)
+        .attr('markerHeight', 8)
+        .attr('orient', 'auto')
+        .append('svg:path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#000');
+    
+    svg.append('svg:defs').append('svg:marker')
+        .attr('id', 'start-arrow')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 4)
+        .attr('markerWidth', 8)
+        .attr('markerHeight', 8)
+        .attr('orient', 'auto')
+        .append('svg:path')
+        .attr('d', 'M10,-5L0,0L10,5')
+        .attr('fill', '#000');
+    
+        // line displayed when dragging new nodes
+    var drag_line = svg.append('svg:path')
+        .attr('class', 'dragline hidden')
+        .attr('d', 'M0,0L0,0')
+    ;
+}
+
+
+var Graph = require("graph-data-structure");
+let graphData = {"CSS 101":{title:"Create Phonebook",description:"Create Phonebook, where data is stored in file"},
+                "CSS 102":{title:"String class",description:"Implement String class, without using standard Java String"},
+                "CSS 103":{title:"Bank cashier", description:"Implement Bank cashier"},
+                "CSS 104":{title:"Chess",description:"Chess game"},
+                "CSS 105":{title:"Landing page",description:"Implement landing page"}
+            };
+let graph = Graph();
+graph.addNode("CSS 101").addNode("CSS 102").addNode("CSS 103").addNode("CSS 104").addNode("CSS 105");
+graph.addEdge("CSS 101","CSS 102");
+graph.addEdge("CSS 101","CSS 103");
+graph.addEdge("CSS 102","CSS 104");
+graph.addEdge("CSS 102","CSS 105");
+graph.addEdge("CSS 103","CSS 105");
 var radius = 40;
-let graphData = [{label:"CSS 101",description:"Write application with Programming"},
-                {label:"CSS 102", parentNodes:[0],description:""},
-                {label:"CSS 103",parentNodes:[0]},
-                {label:"CSS 104",parentNodes:[1]},
-                {label:"CSS 105",parentNode:[1,2]}
-            ];
+
 window.states = [];
 let x = 40;let y=40;let index= 0;
-for (let graphNode of graphData){
-    let newNode = {index:index,x:x,y:y,label: graphNode.label,transitions:[]};
+let nodes = graph.nodes();
+for (let i=0;i<nodes.length;i++){
+    let node = nodes[i];
+    let newNode = {index:index,x:x,y:y,label:node,transitions:[]};
+    graphData[node].windowState = newNode;
+    //window.states[node] = newNode;
     window.states.push(newNode);
-    if (graphNode.parentNodes){
-        for (let parentNode of graphNode.parentNodes){
-            newNode.transitions.push({label:'whooo',target:window.states[parentNode]});
-        }
+    x = x+100; y = y+100; index = index+1;
+}
+for (let i=0;i<window.states.length;i++){
+    let nodeState = window.states[i];
+    //console.log(node);
+    let adjNodes = graph.adjacent(nodeState.label);
+    //console.log(adjNodes);
+    for (let adjNode of adjNodes){
+        console.log(adjNode);
+        //nodeState.transitions.push({label:'whoo',target:window.states[adjNode]});
+        nodeState.transitions.push({label:'whoo',target:graphData[adjNode].windowState});
     }
-    x=x+100;y=y+100;index=index+1;
-}/*
-window.states = [
-    { x : 43, y : 67, label : "first", transitions : [] },
-    { x : 340, y : 150, label : "second", transitions : [] },
-    { x : 200, y : 250, label : "third", transitions : [] },
-    { x : 300, y : 320, label : "fourth", transitions : [] },
-    { x : 50, y : 250, label : "fifth", transitions : [] },
-    { x : 90, y : 170, label : "last", transitions : [] }
-];
+}
+console.log("Hello World");
+initializeSVG();
 
-window.states[0].transitions.push( { label : 'whooo', target : window.states[1]})*/
 
-window.svg = d3.select('body')
-.append("svg")
-//.attr("viewBox", "0 0 " + 1000 + " " + 1000 )
-//.attr("preserveAspectRatio", "xMinYMin")
-.attr("width", "960px")
-.attr("height", "500px");    
-
-    // define arrow markers for graph links
-svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'end-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 3)
-    .attr('markerWidth', 8)
-    .attr('markerHeight', 8)
-    .attr('orient', 'auto')
-    .append('svg:path')
-    .attr('d', 'M0,-5L10,0L0,5')
-    .attr('fill', '#000');
-
-svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'start-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 4)
-    .attr('markerWidth', 8)
-    .attr('markerHeight', 8)
-    .attr('orient', 'auto')
-    .append('svg:path')
-    .attr('d', 'M10,-5L0,0L10,5')
-    .attr('fill', '#000');
-
-    // line displayed when dragging new nodes
-var drag_line = svg.append('svg:path')
-    .attr('class', 'dragline hidden')
-    .attr('d', 'M0,0L0,0')
-;
 
 var gStates = svg.selectAll("g.state").data(states);
 
@@ -123,7 +143,7 @@ var drag = d3.behavior.drag()
     // TODO : http://stackoverflow.com/questions/14667401/click-event-not-firing-after-drag-sometimes-in-d3-js
 
     // needed by FF
-    drag_line.classed('hidden', true).style('marker-end', '');
+    //drag_line.classed('hidden', true).style('marker-end', '');
 
     if( startState && endState) {
         startState.transitions.push( { label : "transition label 1", target : endState});
@@ -141,19 +161,15 @@ svg.on( "mousedown", function() {
 
     var p = d3.mouse(this);
     //console.log("Mouse Down");
-    svg.append( "rect").attr({
-        rx: 6, ry: 6, class: "selection", x: p[0], y: p[1], width: 0, height: 0
-    })
+    svg.append( "rect").attr({ rx: 6, ry: 6, class: "selection", x: p[0], y: p[1], width: 0, height: 0 })
 })
 .on( "mousemove", function() {
-    var p = d3.mouse( this),
-        s = svg.select( "rect.selection");
+    var p = d3.mouse( this), s = svg.select("rect.selection");
 
     if( !s.empty()) {
         var d = { x:parseInt(s.attr("x"),10),y:parseInt(s.attr("y"),10),
                     width:parseInt(s.attr("width"),10),height:parseInt(s.attr( "height"), 10)},
-        move = {x : p[0] - d.x,
-                y : p[1] - d.y};
+        move = {x : p[0] - d.x, y : p[1] - d.y};
         if( move.x < 1 || (move.x*2<d.width)) {
             d.x = p[0];
             d.width -= move.x;
@@ -171,8 +187,7 @@ svg.on( "mousedown", function() {
             // deselect all temporary selected state objects
         d3.selectAll( 'g.state.selection.selected').classed( "selected", false);
         d3.selectAll( 'g.state >circle.inner').each( function( state_data, i) {
-            if( 
-                !d3.select( this).classed( "selected") && 
+            if(!d3.select( this).classed( "selected") && 
                     // inner circle inside selection frame
                 state_data.x-radius>=d.x && state_data.x+radius<=d.x+d.width && 
                 state_data.y-radius>=d.y && state_data.y+radius<=d.y+d.height
@@ -186,22 +201,21 @@ svg.on( "mousedown", function() {
     } else if( startState) {
             // update drag line
         drag_line.attr('d', 'M' + startState.x + ',' + startState.y + 'L' + p[0] + ',' + p[1]);
-
         var state = d3.select( 'g.state.hover');
         endState = (!state.empty() && state.data()[0]) || undefined;
     }
 })
 .on("mouseup", function() {
-        // remove selection frame
+    // remove selection frame
     svg.selectAll( "rect.selection").remove();
-        // remove temporary selection marker class
+    // remove temporary selection marker class
     d3.selectAll( 'g.state.selection').classed( "selection", false);
 })
 .on("mouseout", function() {
     if( d3.event.relatedTarget.tagName=='HTML') {
-            // remove selection frame
+        // remove selection frame
         svg.selectAll( "rect.selection").remove();
-            // remove temporary selection marker class
+        // remove temporary selection marker class
         d3.selectAll( 'g.state.selection').classed( "selection", false);
     }
 });
@@ -211,10 +225,11 @@ function restart() {
     
     gStates = gStates.data(states);
     var gState = gStates.enter().append( "g")
-        .attr({
-            "transform" : function( d) {
-                return "translate("+ [d.x,d.y] + ")";
-            },'class': 'state','data-id':function(d){ return d.index} 
+        .attr({ "transform" : function( d) { return "translate("+ [d.x,d.y] + ")";
+            },'class': 'state','data-id':function(d){
+                //console.log(d);
+                return d.label;
+            } 
         }).call( drag);
     /*gState.append("circle")
         .attr({
@@ -241,7 +256,8 @@ function restart() {
         d3.select( this.parentNode).classed( "hover", true);})
     .on("click",function(d,i){
         console.log("CLICKED");
-        console.log(this.parentNode);
+        console.log(this.parentNode.dataset.id);
+        showInformation(this.parentNode.dataset.id);
     });
     //gState.append('rect').attr({});
     /*gState.append( "circle")
