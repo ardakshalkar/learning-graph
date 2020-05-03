@@ -40,25 +40,84 @@ function initializeSVG(){
     ;
 }
 
-
+let width = 960,height = 500, depth_limit = 10, lane_limit = 5;
 var Graph = require("graph-data-structure");
-let graphData = {"CSS 101":{title:"Create Phonebook",description:"Create Phonebook, where data is stored in file"},
-                "CSS 102":{title:"String class",description:"Implement String class, without using standard Java String"},
-                "CSS 103":{title:"Bank cashier", description:"Implement Bank cashier"},
-                "CSS 104":{title:"Chess",description:"Chess game"},
-                "CSS 105":{title:"Landing page",description:"Implement landing page"}
-            };
+let graphData = {
+    "CSS 101":{title:"Create Phonebook",description:"Create Phonebook, where data is stored in file"},
+    "CSS 102":{title:"String class",description:"Implement String class, without using standard Java String"},
+    "CSS 103":{title:"Bank cashier", description:"Implement Bank cashier"},
+    "CSS 104":{title:"Chess",description:"Chess game"},
+    "CSS 105":{title:"Landing page",description:"Implement landing page"},
+    "CSS 106":{title:"Create E-commerse store",description:"You should create e-commerce page where users can buy items"}
+};
 let graph = Graph();
-graph.addNode("CSS 101").addNode("CSS 102").addNode("CSS 103").addNode("CSS 104").addNode("CSS 105");
+graph.addNode("CSS 101").addNode("CSS 102").addNode("CSS 103")
+        .addNode("CSS 104").addNode("CSS 105").addNode("CSS 106");
 graph.addEdge("CSS 101","CSS 102");
 graph.addEdge("CSS 101","CSS 103");
 graph.addEdge("CSS 102","CSS 104");
 graph.addEdge("CSS 102","CSS 105");
 graph.addEdge("CSS 103","CSS 105");
+graph.addEdge("CSS 102","CSS 106");
+graph.addEdge("CSS 104","CSS 106");
+let root = "CSS 101";
 var radius = 40;
-
 window.states = [];
-let x = 40;let y=40;let index= 0;
+
+for (let node of graph.nodes()){
+    newNode = {index:0,x:0,y:0,label:node,transitions:[]};
+    graphData[node].windowState = newNode;
+    window.states.push(newNode);
+}
+
+let nodes = [root];
+for (let depth=0;depth<depth_limit;depth++){
+    let x = width/(depth_limit*2)*(depth*2+1);
+    let adjacentNodes = [];
+    for (let i=0;i<nodes.length;i++){
+        let node = nodes[i];
+        y = height / (lane_limit*2)* (i*2+1)
+        newNode = {index:0,x:x,y:y,label:node,transitions:[]};
+        graphData[node].windowState = newNode;
+        window.states.push(newNode);
+        //console.log(graph.adjacent(node));
+        adjacentNodes = adjacentNodes.concat(graph.adjacent(node));
+        //console.log(adjacentNodes);
+    }
+    //console.log(adjacentNodes);
+    nodes = [...new Set(adjacentNodes)];
+}
+for (let i=0;i<window.states.length;i++){
+    let nodeState = window.states[i];
+    //console.log(node);
+    let adjNodes = graph.adjacent(nodeState.label);
+    //console.log(adjNodes);
+    for (let adjNode of adjNodes){
+        console.log(adjNode);
+        //nodeState.transitions.push({label:'whoo',target:window.states[adjNode]});
+        nodeState.transitions.push({label:'whoo',target:graphData[adjNode].windowState});
+    }
+}
+
+
+/*
+let x = width/(depth*2), y = height/(lane_limit*2);
+let newNode = {index:0,x:x,y:y,label:root,transitions:[]};
+graphData[root].windowState = newNode;
+window.states.push(newNode);
+
+let adjacentNodes = graph.adjacent(root);
+x = width/(depth*2)*3, y = height/(lane_limit*2);
+console.log(adjacentNodes);
+for (let i=0;i<adjacentNodes.length;i++){
+    let node = adjacentNodes[i];
+    y = height/(lane_limit*2)*(i*2+1);
+    newNode = {index:0,x:x,y:y,label:node,transitions:[]};
+    graphData[node].windowState = newNode;
+    window.states.push(newNode);
+}*/
+
+/*let x = 40;let y=40;let index= 0;
 let nodes = graph.nodes();
 for (let i=0;i<nodes.length;i++){
     let node = nodes[i];
@@ -78,7 +137,7 @@ for (let i=0;i<window.states.length;i++){
         //nodeState.transitions.push({label:'whoo',target:window.states[adjNode]});
         nodeState.transitions.push({label:'whoo',target:graphData[adjNode].windowState});
     }
-}
+}*/
 console.log("Hello World");
 initializeSVG();
 
