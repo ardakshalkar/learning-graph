@@ -64,8 +64,10 @@ let root = "CSS 101";
 var radius = 40;
 window.states = [];
 
-for (let node of graph.nodes()){
-    newNode = {index:0,x:0,y:0,label:node,transitions:[]};
+let nodesIterate = graph.nodes();
+for (let i=0;i<nodesIterate.length;i++){
+    let node = nodesIterate[i];
+    newNode = {index:i,x:0,y:0,label:node,transitions:[]};
     graphData[node].windowState = newNode;
     window.states.push(newNode);
 }
@@ -77,9 +79,11 @@ for (let depth=0;depth<depth_limit;depth++){
     for (let i=0;i<nodes.length;i++){
         let node = nodes[i];
         y = height / (lane_limit*2)* (i*2+1)
-        newNode = {index:0,x:x,y:y,label:node,transitions:[]};
-        graphData[node].windowState = newNode;
-        window.states.push(newNode);
+        graphData[node].windowState.x = x;
+        graphData[node].windowState.y = y;
+        //newNode = {index:0,x:x,y:y,label:node,transitions:[]};
+        //graphData[node].windowState = newNode;
+        //window.states.push(newNode);
         //console.log(graph.adjacent(node));
         adjacentNodes = adjacentNodes.concat(graph.adjacent(node));
         //console.log(adjacentNodes);
