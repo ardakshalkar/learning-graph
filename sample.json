@@ -1,0 +1,21 @@
+{
+    "graph":{
+        "nodes": [
+            { "id": 1, "title":"CSS 101" ,"description":"Create Phonebook, where data is stored in file"},
+            { "id": 2, "title":"CSS 102" ,"description":"Implement String class, without using standard Java String"},
+            { "id": 3, "title":"CSS 103" ,"description":"Implement Bank cashier"},
+            { "id": 4, "title":"CSS 104" ,"description":"Chess game"},
+            { "id": 5, "title":"CSS 105" ,"description":"Implement landing page"},
+            { "id": 6, "title":"CSS 106" ,"description":"You should create e-commerce page where users can buy items"}
+        ],
+        "links": [
+            { "source": 1, "target": 2, "weight": 1 },
+            { "source": 1, "target": 3, "weight": 1 },
+            { "source": 2, "target": 4, "weight": 1 },
+            { "source": 2, "target": 5, "weight": 1 },
+            { "source": 3, "target": 5, "weight": 1 },
+            { "source": 2, "target": 6, "weight": 1 },
+            { "source": 4, "target": 6, "weight": 1 }
+        ]
+    }
+}

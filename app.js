@@ -1,3 +1,24 @@
+var firebaseConfig = {
+    apiKey: "AIzaSyDxqsVGn147Elynzocvw7CSuqBfqlJ5dao",
+    authDomain: "learninggraph-56737.firebaseapp.com",
+    databaseURL: "https://learninggraph-56737.firebaseio.com",
+    projectId: "learninggraph-56737",
+    storageBucket: "learninggraph-56737.appspot.com",
+    messagingSenderId: "177449874026",
+    appId: "1:177449874026:web:51073e529f890685b5d013",
+    measurementId: "G-WVNZ1PSGC8"
+  };
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+console.log(firebase);
+console.log(firebase.database());
+firebase.database().ref('graph').once('value').then(function(snapshot){
+    let data = snapshot.val();
+    console.log(data);
+});
+
+
 function showInformation(id){
     let details = document.querySelector("#details");
     details.innerHTML = graphData[id].title+"<br/>"+graphData[id].description;
@@ -39,8 +60,19 @@ function initializeSVG(){
         .attr('d', 'M0,0L0,0')
     ;
 }
+function locateCard(level,index,items_amount){
+    let x = width/(depth_limit*2)*(level*2+1);
+    //let y = height / (lane_limit*2)* (index*2+1);
+    let y = height/(items_amount+1)*(index+1);
+    return {"x":x,"y":y};
+}
 
-let width = 960,height = 500, depth_limit = 10, lane_limit = 5;
+
+let width = 960,height = 500, depth_limit = 5, lane_limit = 5;
+let cardWidth = 150, cardHeight = 30;
+
+let textSettings = {'text-anchor':'middle',y : 4,class:'title'};
+let cardSettings = {x:-(cardWidth/2),y:-(cardHeight/2),width:cardWidth,height:cardHeight,rx:5,style:"fill:wheat;stroke:black"};
 var Graph = require("graph-data-structure");
 let graphData = {
     "CSS 101":{title:"Create Phonebook",description:"Create Phonebook, where data is stored in file"},
@@ -78,13 +110,10 @@ for (let depth=0;depth<depth_limit;depth++){
     let adjacentNodes = [];
     for (let i=0;i<nodes.length;i++){
         let node = nodes[i];
-        y = height / (lane_limit*2)* (i*2+1)
-        graphData[node].windowState.x = x;
-        graphData[node].windowState.y = y;
-        //newNode = {index:0,x:x,y:y,label:node,transitions:[]};
-        //graphData[node].windowState = newNode;
-        //window.states.push(newNode);
-        //console.log(graph.adjacent(node));
+        y = height / (lane_limit*2)* (i*2+1);
+        let coords = locateCard(depth,i,nodes.length);
+        graphData[node].windowState.x = coords.x;
+        graphData[node].windowState.y = coords.y;
         adjacentNodes = adjacentNodes.concat(graph.adjacent(node));
         //console.log(adjacentNodes);
     }
@@ -103,45 +132,6 @@ for (let i=0;i<window.states.length;i++){
     }
 }
 
-
-/*
-let x = width/(depth*2), y = height/(lane_limit*2);
-let newNode = {index:0,x:x,y:y,label:root,transitions:[]};
-graphData[root].windowState = newNode;
-window.states.push(newNode);
-
-let adjacentNodes = graph.adjacent(root);
-x = width/(depth*2)*3, y = height/(lane_limit*2);
-console.log(adjacentNodes);
-for (let i=0;i<adjacentNodes.length;i++){
-    let node = adjacentNodes[i];
-    y = height/(lane_limit*2)*(i*2+1);
-    newNode = {index:0,x:x,y:y,label:node,transitions:[]};
-    graphData[node].windowState = newNode;
-    window.states.push(newNode);
-}*/
-
-/*let x = 40;let y=40;let index= 0;
-let nodes = graph.nodes();
-for (let i=0;i<nodes.length;i++){
-    let node = nodes[i];
-    let newNode = {index:index,x:x,y:y,label:node,transitions:[]};
-    graphData[node].windowState = newNode;
-    //window.states[node] = newNode;
-    window.states.push(newNode);
-    x = x+100; y = y+100; index = index+1;
-}
-for (let i=0;i<window.states.length;i++){
-    let nodeState = window.states[i];
-    //console.log(node);
-    let adjNodes = graph.adjacent(nodeState.label);
-    //console.log(adjNodes);
-    for (let adjNode of adjNodes){
-        console.log(adjNode);
-        //nodeState.transitions.push({label:'whoo',target:window.states[adjNode]});
-        nodeState.transitions.push({label:'whoo',target:graphData[adjNode].windowState});
-    }
-}*/
 console.log("Hello World");
 initializeSVG();
 
@@ -160,21 +150,23 @@ var transitions = function() {
 };
     // http://www.dashingd3js.com/svg-paths-and-d3js
 var computeTransitionPath = /*d3.svg.diagonal.radial()*/function( d) {
-    var deltaX = d.target.x - d.source.x,
-    deltaY = d.target.y - d.source.y,
-    dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-    normX = deltaX / dist,
-    normY = deltaY / dist,
-    sourcePadding = radius + 2;//d.left ? 17 : 12,
-    targetPadding = radius + 6;//d.right ? 17 : 12,
-    sourceX = d.source.x + (sourcePadding * normX),
-    sourceY = d.source.y + (sourcePadding * normY),
-    targetX = d.target.x - (targetPadding * normX),
-    targetY = d.target.y - (targetPadding * normY);
-    return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+    console.log(d);
+    let deltaX = d.target.x - d.source.x, deltaY = d.target.y - d.source.y;
+
+    sourceX = Math.floor(d.source.x+cardWidth/2),
+    sourceY = Math.floor(d.source.y),
+    targetX = Math.floor(d.target.x-cardWidth/2)-5,
+    targetY = Math.floor(d.target.y);
+    let bezier1X = 0, bezier1Y =0, bezier2X = 0, bezier2Y = 0;
+    bezier1X = sourceX; bezier2X = targetX;
+    bezier1Y = targetY; bezier2Y = sourceY;
+
+    console.log('M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY);
+    return 'M '+sourceX+' '+sourceY+' C '+bezier2X+' '+bezier2Y+','+bezier1X+' '+bezier1Y+','+targetX+' '+targetY;
+    //return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
 };
 
-var gTransitions = svg.append( 'g').selectAll( "path.transition").data(transitions);
+var gTransitions = svg.append( 'g').selectAll("path.transition").data(transitions);
 
 var startState, endState;    
 var drag = d3.behavior.drag()
@@ -224,7 +216,7 @@ svg.on( "mousedown", function() {
 
     var p = d3.mouse(this);
     //console.log("Mouse Down");
-    svg.append( "rect").attr({ rx: 6, ry: 6, class: "selection", x: p[0], y: p[1], width: 0, height: 0 })
+    svg.append("rect").attr({ rx: 6, ry: 6, class: "selection", x: p[0], y: p[1], width: 0, height: 0 })
 })
 .on( "mousemove", function() {
     var p = d3.mouse( this), s = svg.select("rect.selection");
@@ -255,7 +247,6 @@ svg.on( "mousedown", function() {
                 state_data.x-radius>=d.x && state_data.x+radius<=d.x+d.width && 
                 state_data.y-radius>=d.y && state_data.y+radius<=d.y+d.height
             ) {
-
                 d3.select( this.parentNode)
                 .classed( "selection", true)
                 .classed( "selected", true);
@@ -277,15 +268,13 @@ svg.on( "mousedown", function() {
 .on("mouseout", function() {
     if( d3.event.relatedTarget.tagName=='HTML') {
         // remove selection frame
-        svg.selectAll( "rect.selection").remove();
+        svg.selectAll("rect.selection").remove();
         // remove temporary selection marker class
-        d3.selectAll( 'g.state.selection').classed( "selection", false);
+        d3.selectAll('g.state.selection').classed( "selection", false);
     }
 });
 restart();
 function restart() {
-    console.log("RESTART");
-    
     gStates = gStates.data(states);
     var gState = gStates.enter().append( "g")
         .attr({ "transform" : function( d) { return "translate("+ [d.x,d.y] + ")";
@@ -294,81 +283,18 @@ function restart() {
                 return d.label;
             } 
         }).call( drag);
-    /*gState.append("circle")
-        .attr({
-            //rx: 5,width:80,height:80
-            r       : radius + 100,
-            class   : 'outer'
-        })
-        .on( "mousedown", function( d) {
-            startState = d, endState = undefined;
+    gState.append('rect').attr(cardSettings)
+        .on("mouseover",function(d,i){ d3.select( this.parentNode).classed( "hover", true);})
+        .on("click",function(d,i){ showInformation(this.parentNode.dataset.id); });
 
-                // reposition drag line
-            drag_line
-                .style('marker-end', 'url(#end-arrow)')
-                .classed('hidden', false)
-                .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y)
-            ;
-
-                // force element to be an top
-            this.parentNode.parentNode.appendChild( this.parentNode);
-            console.log( "mousedown", startState);
-        });*/
-    gState.append('circle').attr({r:40,class:'inner'})
-    .on("mouseover",function(d,i){
-        d3.select( this.parentNode).classed( "hover", true);})
-    .on("click",function(d,i){
-        console.log("CLICKED");
-        console.log(this.parentNode.dataset.id);
-        showInformation(this.parentNode.dataset.id);
-    });
-    //gState.append('rect').attr({});
-    /*gState.append( "circle")
-        .attr({
-            //rx: 5,width:80,height:80,
-            r       : radius,
-            class   : 'inner'
-        })
-        .on( "click", function( d, i) {
-            var e = d3.event,
-                g = this.parentNode,
-                isSelected = d3.select( g).classed( "selected");
-
-            if( !e.ctrlKey) {
-                d3.selectAll( 'g.selected').classed( "selected", false);
-            }
-            d3.select( g).classed( "selected", !isSelected);
-                // reappend dragged element as last 
-                // so that its stays on top 
-            g.parentNode.appendChild( g);
-        })
-        .on("mouseover", function(){
-            d3.select( this.parentNode).classed( "hover", true);
-        })
-        .on("mouseout", function() { 
-            d3.select( this.parentNode).classed( "hover", false);
-        });
-    ;*/
-
-    gState.append("text")
-        .attr({
-            'text-anchor'   : 'middle',
-            y               : 4,
-            class           : 'title'
-        })
-        .text( function( d) {
-            return d.label;
-        })
-    ;
-    gState.append( "title").text( function( d) {
-        return d.label;
-    });
+    gState.append("text").attr(textSettings).text( function( d) { return d.label; });
+    gState.append("title").text( function( d) {return d.label; });
     gStates.exit().remove();
 
     gTransitions = gTransitions.data( transitions);
     gTransitions.enter().append( 'path')
-        .attr( 'class', 'transition')
-        .attr( 'd', computeTransitionPath)
+        .attr('class', 'transition')
+        .attr('d', computeTransitionPath)
     ;   
     gTransitions.exit().remove();
 };
